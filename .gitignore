@@ -113,6 +113,5 @@ run
 
 # sqlite
 db.sqlite3
-aivory_server/db.sqlite3
 
 .DS_Store
