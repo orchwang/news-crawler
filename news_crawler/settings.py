@@ -1,12 +1,16 @@
 import os
+import yaml
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = '6$2-qd^wi962q$8j)%a20d0d1i!q9!f&qw54@od5x89y4zxsjs'
+with open(f'{BASE_DIR}/conf/system_environments.yml', 'r') as f:
+    environment = yaml.load(f, Loader=yaml.FullLoader)
+
+SECRET_KEY = environment['secret_key']
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = environment['prod']['allowed_hosts']
 
 
 INSTALLED_APPS = [
@@ -16,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crawlers'
 ]
 
 MIDDLEWARE = [
@@ -52,16 +57,17 @@ WSGI_APPLICATION = 'news_crawler.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+DATABASES = {}
+for database in environment['prod']['database']:
+    DATABASES[database['title']] = {
+        'ENGINE': database['engine'],
+        'NAME': database['name'],
+        'USER': database['user'],
+        'PASSWORD': database['password'],
+        'HOST': database['host'],
+        'PORT': database['port']
     }
-}
 
-
-# Password validation
-# https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -79,9 +85,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -92,8 +95,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+MEDIA_URL = environment['prod']['media']['media_url']
+MEDIA_ROOT = environment['prod']['media']['media_root']
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_URL = '/static/'
+STATIC_URL = environment['prod']['static']['static_url']
+STATIC_ROOT = environment['prod']['static']['static_root']
